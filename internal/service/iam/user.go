@@ -114,6 +114,11 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	if err != nil {
+		if tfawserr.ErrCodeEquals(err, iam.ErrCodeEntityAlreadyExistsException) {
+			log.Printf("[WARN] IAM User (%s) already exists, continuing...", name)
+			d.SetId(name)
+			return append(diags, resourceUserRead(ctx, d, meta)...)
+		}
 		return sdkdiag.AppendErrorf(diags, "creating IAM User (%s): %s", name, err)
 	}
 
